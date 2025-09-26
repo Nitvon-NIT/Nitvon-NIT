@@ -35,8 +35,6 @@ export interface Achievement {
 }
 
 export interface GameSettings {
-  soundEnabled: boolean
-  musicEnabled: boolean
   notifications: boolean
   difficulty: "easy" | "medium" | "hard"
   theme: "dark" | "light" | "auto"
@@ -133,8 +131,6 @@ const initialAchievements: Achievement[] = [
 ]
 
 const initialSettings: GameSettings = {
-  soundEnabled: true,
-  musicEnabled: true,
   notifications: true,
   difficulty: "medium",
   theme: "dark",
