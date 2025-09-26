@@ -6,11 +6,12 @@ import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { useGameState } from "@/lib/game-state"
-import { TrendingUp, TrendingDown, Menu, Gamepad2 } from "lucide-react"
+import { TrendingUp, TrendingDown, Menu, Gamepad2, Music } from "lucide-react"
 import { NewsPanel } from "./news-panel"
 import { NitvonAvatar } from "./nitvon-avatar"
 import { ProgressionTracker } from "./progression-tracker"
 import { RealTimeCandlestickChart } from "./real-time-candlestick-chart"
+import { BusinessRapPlayer } from "./business-rap-player"
 
 interface CryptoData {
   symbol: string
@@ -28,6 +29,7 @@ export function TradingDashboard() {
   const [tradeAmount, setTradeAmount] = useState([50])
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([])
   const [nitvonAdvice, setNitvonAdvice] = useState("Welcome to the trading floor! Choose your first trade wisely.")
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false)
 
   useEffect(() => {
     const generateCryptoData = (): CryptoData[] => [
@@ -139,73 +141,82 @@ export function TradingDashboard() {
   }
 
   return (
-    <div className="min-h-screen p-4 space-y-4">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen p-2 md:p-4 space-y-3 md:space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 md:gap-4 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setScreen("menu")}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-xs md:text-sm"
           >
-            <Menu className="h-4 w-4 mr-2" />
+            <Menu className="h-4 w-4 mr-1 md:mr-2" />
             Menu
           </Button>
-          <Badge variant="outline" className="border-primary text-primary">
+          <Badge variant="outline" className="border-primary text-primary text-xs">
             {player.rank}
           </Badge>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setScreen("minigame")}
-            className="border-accent text-accent hover:bg-accent/10"
+            className="border-accent text-accent hover:bg-accent/10 text-xs md:text-sm"
           >
-            <Gamepad2 className="h-4 w-4 mr-2" />
+            <Gamepad2 className="h-4 w-4 mr-1 md:mr-2" />
             Mini-Game
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowMusicPlayer(!showMusicPlayer)}
+            className="border-purple-500 text-purple-500 hover:bg-purple-500/10 text-xs md:text-sm"
+          >
+            <Music className="h-4 w-4 mr-1 md:mr-2" />
+            Beats
           </Button>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 md:gap-6 text-sm">
           <div className="text-right">
-            <div className="text-sm text-muted-foreground">Portfolio</div>
-            <div className="text-xl font-bold text-primary">${player.portfolio.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Portfolio</div>
+            <div className="text-lg md:text-xl font-bold text-primary">${player.portfolio.toLocaleString()}</div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-muted-foreground">Level {player.level}</div>
-            <div className="text-sm text-accent">{player.xp} XP</div>
+            <div className="text-xs text-muted-foreground">Level {player.level}</div>
+            <div className="text-xs text-accent">{player.xp} XP</div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-muted-foreground">Coins</div>
-            <div className="text-lg font-semibold text-chart-2">{player.coins}</div>
+            <div className="text-xs text-muted-foreground">Coins</div>
+            <div className="text-sm md:text-lg font-semibold text-chart-2">{player.coins}</div>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-4">
-        {/* Crypto List */}
-        <Card className="p-4 bg-card/80 backdrop-blur-sm">
-          <h3 className="font-semibold mb-4 text-foreground">Live Markets</h3>
-          <div className="space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4">
+        <Card className="p-3 md:p-4 bg-card/80 backdrop-blur-sm lg:col-span-1">
+          <h3 className="font-semibold mb-3 md:mb-4 text-foreground text-sm md:text-base">Live Markets</h3>
+          <div className="space-y-2 max-h-64 md:max-h-none overflow-y-auto">
             {cryptoData.map((crypto) => (
               <button
                 key={crypto.symbol}
                 onClick={() => setSelectedCrypto(crypto.symbol)}
-                className={`w-full p-3 rounded-lg text-left transition-colors ${
+                className={`w-full p-2 md:p-3 rounded-lg text-left transition-colors ${
                   selectedCrypto === crypto.symbol
                     ? "bg-primary/20 border border-primary"
                     : "bg-secondary/50 hover:bg-secondary/70"
                 }`}
               >
                 <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-semibold text-foreground">{crypto.symbol}</div>
-                    <div className="text-xs text-muted-foreground">{crypto.name}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-foreground text-sm md:text-base truncate">{crypto.symbol}</div>
+                    <div className="text-xs text-muted-foreground truncate">{crypto.name}</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-foreground">${crypto.price.toLocaleString()}</div>
+                  <div className="text-right ml-2">
+                    <div className="font-semibold text-foreground text-sm">
+                      ${crypto.price > 1000 ? (crypto.price / 1000).toFixed(1) + "K" : crypto.price.toLocaleString()}
+                    </div>
                     <div
-                      className={`text-xs flex items-center ${
+                      className={`text-xs flex items-center justify-end ${
                         crypto.changePercent >= 0 ? "text-chart-5" : "text-destructive"
                       }`}
                     >
@@ -223,16 +234,16 @@ export function TradingDashboard() {
           </div>
         </Card>
 
-        {/* Chart and Trading */}
-        <div className="lg:col-span-2 space-y-4">
-          <RealTimeCandlestickChart symbol={selectedCrypto} interval="5m" height={350} />
+        <div className="lg:col-span-2 space-y-3 md:space-y-4">
+          <RealTimeCandlestickChart symbol={selectedCrypto} interval="5m" height={300} />
 
-          {/* Trading Panel */}
-          <Card className="p-4 bg-card/80 backdrop-blur-sm">
-            <h3 className="font-semibold mb-4 text-foreground">Trade {selectedCrypto}</h3>
-            <div className="space-y-4">
+          <Card className="p-3 md:p-4 bg-card/80 backdrop-blur-sm">
+            <h3 className="font-semibold mb-3 md:mb-4 text-foreground text-sm md:text-base">Trade {selectedCrypto}</h3>
+            <div className="space-y-3 md:space-y-4">
               <div>
-                <label className="text-sm text-muted-foreground mb-2 block">Trade Amount: ${tradeAmount[0]}</label>
+                <label className="text-xs md:text-sm text-muted-foreground mb-2 block">
+                  Trade Amount: ${tradeAmount[0]}
+                </label>
                 <Slider
                   value={tradeAmount}
                   onValueChange={setTradeAmount}
@@ -242,13 +253,16 @@ export function TradingDashboard() {
                   className="w-full"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Button onClick={() => handleTrade("buy")} className="bg-chart-5 hover:bg-chart-5/90 text-white">
-                  <TrendingUp className="h-4 w-4 mr-2" />
+              <div className="grid grid-cols-2 gap-2 md:gap-3">
+                <Button
+                  onClick={() => handleTrade("buy")}
+                  className="bg-chart-5 hover:bg-chart-5/90 text-white text-sm md:text-base"
+                >
+                  <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
                   Buy
                 </Button>
-                <Button onClick={() => handleTrade("sell")} variant="destructive">
-                  <TrendingDown className="h-4 w-4 mr-2" />
+                <Button onClick={() => handleTrade("sell")} variant="destructive" className="text-sm md:text-base">
+                  <TrendingDown className="h-4 w-4 mr-1 md:mr-2" />
                   Sell
                 </Button>
               </div>
@@ -256,10 +270,12 @@ export function TradingDashboard() {
           </Card>
         </div>
 
-        {/* Right Panel */}
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4 lg:col-span-1">
+          {/* Music Player */}
+          {showMusicPlayer && <BusinessRapPlayer className="animate-in slide-in-from-right duration-300" />}
+
           {/* Nitvon Avatar */}
-          <Card className="p-4 bg-card/80 backdrop-blur-sm">
+          <Card className="p-3 md:p-4 bg-card/80 backdrop-blur-sm">
             <NitvonAvatar advice={nitvonAdvice} />
           </Card>
 

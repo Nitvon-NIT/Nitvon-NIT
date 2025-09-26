@@ -5,7 +5,7 @@ import { ComposedChart, Bar, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, R
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, TrendingDown, Activity } from "lucide-react"
+import { TrendingUp, TrendingDown, Activity, Maximize2, Minimize2 } from "lucide-react"
 
 interface CandlestickData {
   timestamp: number
@@ -62,6 +62,7 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
   const [volume24h, setVolume24h] = useState<string>("0")
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInterval, setSelectedInterval] = useState(interval)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Fetch real-time crypto data from CoinGecko API
   const fetchCryptoData = async (cryptoSymbol: string) => {
@@ -251,91 +252,111 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
   const latestCandle = chartData[chartData.length - 1]
 
   return (
-    <Card className="p-6 bg-card/95 backdrop-blur-sm border border-border/50">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <h3 className="text-2xl font-bold text-foreground">{symbol}/USD</h3>
-            <Badge variant={isPositive ? "default" : "destructive"} className="flex items-center gap-1">
+    <Card
+      className={`p-3 md:p-6 bg-card/95 backdrop-blur-sm border border-border/50 ${isFullscreen ? "fixed inset-4 z-50 md:inset-8" : ""}`}
+    >
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 md:mb-6">
+        <div className="space-y-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+            <h3 className="text-lg md:text-2xl font-bold text-foreground truncate">{symbol}/USD</h3>
+            <Badge variant={isPositive ? "default" : "destructive"} className="flex items-center gap-1 text-xs">
               {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {isPositive ? "+" : ""}
               {priceChangePercent.toFixed(2)}%
             </Badge>
             {isLoading && (
-              <Badge variant="outline" className="animate-pulse">
+              <Badge variant="outline" className="animate-pulse text-xs">
                 <Activity className="h-3 w-3 mr-1" />
                 Live
               </Badge>
             )}
           </div>
-          <div className="flex items-baseline gap-4">
-            <span className="text-3xl font-bold text-foreground">${formatPrice(currentPrice)}</span>
-            <span className={`text-lg ${isPositive ? "text-chart-5" : "text-destructive"}`}>
+          <div className="flex items-baseline gap-2 md:gap-4 flex-wrap">
+            <span className="text-xl md:text-3xl font-bold text-foreground">${formatPrice(currentPrice)}</span>
+            <span className={`text-sm md:text-lg ${isPositive ? "text-chart-5" : "text-destructive"}`}>
               {isPositive ? "+" : ""}${Math.abs(priceChange).toFixed(2)}
             </span>
           </div>
-          <div className="text-sm text-muted-foreground">24h Volume: ${volume24h}</div>
+          <div className="text-xs md:text-sm text-muted-foreground">24h Volume: ${volume24h}</div>
         </div>
 
-        {/* Interval Selector */}
-        <div className="flex gap-1">
-          {["1m", "5m", "15m", "1h", "4h"].map((int) => (
-            <Button
-              key={int}
-              variant={selectedInterval === int ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setSelectedInterval(int as any)}
-              className="text-xs"
-            >
-              {int}
-            </Button>
-          ))}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button variant="ghost" size="sm" onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 md:hidden">
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </Button>
+          <div className="flex gap-1 overflow-x-auto">
+            {["1m", "5m", "15m", "1h", "4h"].map((int) => (
+              <Button
+                key={int}
+                variant={selectedInterval === int ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedInterval(int as any)}
+                className="text-xs px-2 py-1 flex-shrink-0"
+              >
+                {int}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Chart */}
-      <div style={{ height }}>
+      <div
+        style={{
+          height: isFullscreen ? "calc(100vh - 200px)" : window.innerWidth < 768 ? Math.min(height, 300) : height,
+        }}
+      >
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <ComposedChart
+            data={chartData}
+            margin={{
+              top: 20,
+              right: window.innerWidth < 768 ? 10 : 30,
+              left: window.innerWidth < 768 ? 10 : 20,
+              bottom: 5,
+            }}
+          >
             <XAxis
               dataKey="time"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+              tick={{ fontSize: window.innerWidth < 768 ? 10 : 12, fill: "hsl(var(--muted-foreground))" }}
+              interval={window.innerWidth < 768 ? 2 : 0}
             />
             <YAxis
               domain={["dataMin - 50", "dataMax + 50"]}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(value) => `$${formatPrice(value)}`}
+              tick={{ fontSize: window.innerWidth < 768 ? 10 : 12, fill: "hsl(var(--muted-foreground))" }}
+              tickFormatter={(value) =>
+                window.innerWidth < 768 ? `$${(value / 1000).toFixed(0)}K` : `$${formatPrice(value)}`
+              }
+              width={window.innerWidth < 768 ? 50 : 80}
             />
             <Tooltip
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload as CandlestickData
                   return (
-                    <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-                      <p className="text-sm font-medium text-foreground mb-2">{label}</p>
+                    <div className="bg-card border border-border rounded-lg p-2 md:p-3 shadow-lg max-w-xs">
+                      <p className="text-xs md:text-sm font-medium text-foreground mb-2">{label}</p>
                       <div className="space-y-1 text-xs">
-                        <div className="flex justify-between gap-4">
+                        <div className="flex justify-between gap-2 md:gap-4">
                           <span className="text-muted-foreground">Open:</span>
                           <span className="text-foreground font-medium">${formatPrice(data.open)}</span>
                         </div>
-                        <div className="flex justify-between gap-4">
+                        <div className="flex justify-between gap-2 md:gap-4">
                           <span className="text-muted-foreground">High:</span>
                           <span className="text-chart-5 font-medium">${formatPrice(data.high)}</span>
                         </div>
-                        <div className="flex justify-between gap-4">
+                        <div className="flex justify-between gap-2 md:gap-4">
                           <span className="text-muted-foreground">Low:</span>
                           <span className="text-destructive font-medium">${formatPrice(data.low)}</span>
                         </div>
-                        <div className="flex justify-between gap-4">
+                        <div className="flex justify-between gap-2 md:gap-4">
                           <span className="text-muted-foreground">Close:</span>
                           <span className="text-foreground font-medium">${formatPrice(data.close)}</span>
                         </div>
-                        <div className="flex justify-between gap-4">
+                        <div className="flex justify-between gap-2 md:gap-4">
                           <span className="text-muted-foreground">Volume:</span>
                           <span className="text-foreground font-medium">{formatVolume(data.volume)}</span>
                         </div>
@@ -355,9 +376,12 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
               type="monotone"
               dataKey="close"
               stroke={isPositive ? "hsl(var(--chart-5))" : "hsl(var(--destructive))"}
-              strokeWidth={2}
+              strokeWidth={window.innerWidth < 768 ? 1.5 : 2}
               dot={false}
-              activeDot={{ r: 4, fill: isPositive ? "hsl(var(--chart-5))" : "hsl(var(--destructive))" }}
+              activeDot={{
+                r: window.innerWidth < 768 ? 3 : 4,
+                fill: isPositive ? "hsl(var(--chart-5))" : "hsl(var(--destructive))",
+              }}
             />
 
             {/* Current price reference line */}
@@ -373,21 +397,25 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
         </ResponsiveContainer>
       </div>
 
-      {/* Technical Indicators */}
-      <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-border/50">
+      <div className="grid grid-cols-3 gap-2 md:gap-4 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border/50">
         <div className="text-center">
           <div className="text-xs text-muted-foreground">RSI (14)</div>
-          <div className="text-sm font-medium text-foreground">{(Math.random() * 40 + 30).toFixed(1)}</div>
+          <div className="text-xs md:text-sm font-medium text-foreground">{(Math.random() * 40 + 30).toFixed(1)}</div>
         </div>
         <div className="text-center">
           <div className="text-xs text-muted-foreground">MA (20)</div>
-          <div className="text-sm font-medium text-foreground">
-            ${formatPrice(currentPrice * (0.98 + Math.random() * 0.04))}
+          <div className="text-xs md:text-sm font-medium text-foreground">
+            $
+            {window.innerWidth < 768
+              ? ((currentPrice * (0.98 + Math.random() * 0.04)) / 1000).toFixed(1) + "K"
+              : formatPrice(currentPrice * (0.98 + Math.random() * 0.04))}
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-muted-foreground">MACD</div>
-          <div className={`text-sm font-medium ${Math.random() > 0.5 ? "text-chart-5" : "text-destructive"}`}>
+          <div
+            className={`text-xs md:text-sm font-medium ${Math.random() > 0.5 ? "text-chart-5" : "text-destructive"}`}
+          >
             {(Math.random() * 200 - 100).toFixed(2)}
           </div>
         </div>
