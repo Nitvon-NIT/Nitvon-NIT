@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { RealTimeCandlestickChart } from "./real-time-candlestick-chart"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -214,6 +215,10 @@ export function MarketEvent() {
               <p className="text-lg text-muted-foreground">{choice.description}</p>
             </div>
 
+            <div className="max-w-md mx-auto">
+              <RealTimeCandlestickChart symbol="BTC" interval="1m" height={200} />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">+{choice.xpReward} XP</div>
@@ -256,6 +261,10 @@ export function MarketEvent() {
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               {currentEvent.description}
             </p>
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            <RealTimeCandlestickChart symbol="BTC" interval="5m" height={250} />
           </div>
 
           {/* Choices */}

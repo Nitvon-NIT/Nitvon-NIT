@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGameState } from "@/lib/game-state"
 import { Shield, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
+import { RealTimeCandlestickChart } from "./real-time-candlestick-chart"
 
 interface Project {
   id: string
@@ -174,6 +175,13 @@ export function ScamDetectorGame() {
               <h2 className="text-2xl font-bold text-primary mb-2">{currentProject.name}</h2>
               <p className="text-foreground leading-relaxed">{currentProject.description}</p>
             </div>
+
+            {currentProject.isScam && (
+              <div className="border border-destructive/20 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-destructive mb-2">Suspicious Price Action</h4>
+                <RealTimeCandlestickChart symbol="NITVON" interval="1m" height={200} />
+              </div>
+            )}
 
             <div>
               <h3 className="font-semibold text-foreground mb-3">Project Features:</h3>

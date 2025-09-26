@@ -7,10 +7,10 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { useGameState } from "@/lib/game-state"
 import { TrendingUp, TrendingDown, Menu, Gamepad2 } from "lucide-react"
-import { CryptoChart } from "./crypto-chart"
 import { NewsPanel } from "./news-panel"
 import { NitvonAvatar } from "./nitvon-avatar"
 import { ProgressionTracker } from "./progression-tracker"
+import { RealTimeCandlestickChart } from "./real-time-candlestick-chart"
 
 interface CryptoData {
   symbol: string
@@ -29,7 +29,6 @@ export function TradingDashboard() {
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([])
   const [nitvonAdvice, setNitvonAdvice] = useState("Welcome to the trading floor! Choose your first trade wisely.")
 
-  // Mock crypto data with realistic fluctuations
   useEffect(() => {
     const generateCryptoData = (): CryptoData[] => [
       {
@@ -58,6 +57,33 @@ export function TradingDashboard() {
         changePercent: (Math.random() - 0.5) * 15,
         volume: "890M",
         marketCap: "52B",
+      },
+      {
+        symbol: "ADA",
+        name: "Cardano",
+        price: 0.45 + Math.random() * 0.2,
+        change: (Math.random() - 0.5) * 0.1,
+        changePercent: (Math.random() - 0.5) * 12,
+        volume: "420M",
+        marketCap: "15B",
+      },
+      {
+        symbol: "DOT",
+        name: "Polkadot",
+        price: 6.5 + Math.random() * 2,
+        change: (Math.random() - 0.5) * 0.8,
+        changePercent: (Math.random() - 0.5) * 14,
+        volume: "180M",
+        marketCap: "8B",
+      },
+      {
+        symbol: "MATIC",
+        name: "Polygon",
+        price: 0.85 + Math.random() * 0.3,
+        change: (Math.random() - 0.5) * 0.15,
+        changePercent: (Math.random() - 0.5) * 16,
+        volume: "320M",
+        marketCap: "7B",
       },
       {
         symbol: "NITVON",
@@ -159,7 +185,7 @@ export function TradingDashboard() {
       <div className="grid lg:grid-cols-4 gap-4">
         {/* Crypto List */}
         <Card className="p-4 bg-card/80 backdrop-blur-sm">
-          <h3 className="font-semibold mb-4 text-foreground">Markets</h3>
+          <h3 className="font-semibold mb-4 text-foreground">Live Markets</h3>
           <div className="space-y-2">
             {cryptoData.map((crypto) => (
               <button
@@ -199,30 +225,7 @@ export function TradingDashboard() {
 
         {/* Chart and Trading */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Chart */}
-          <Card className="p-4 bg-card/80 backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-foreground">
-                {selectedCryptoData?.name} ({selectedCrypto})
-              </h3>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-foreground">${selectedCryptoData?.price.toLocaleString()}</div>
-                <div
-                  className={`text-sm flex items-center justify-end ${
-                    (selectedCryptoData?.changePercent || 0) >= 0 ? "text-chart-5" : "text-destructive"
-                  }`}
-                >
-                  {(selectedCryptoData?.changePercent || 0) >= 0 ? (
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 mr-1" />
-                  )}
-                  {selectedCryptoData?.changePercent.toFixed(2)}%
-                </div>
-              </div>
-            </div>
-            <CryptoChart symbol={selectedCrypto} />
-          </Card>
+          <RealTimeCandlestickChart symbol={selectedCrypto} interval="5m" height={350} />
 
           {/* Trading Panel */}
           <Card className="p-4 bg-card/80 backdrop-blur-sm">
