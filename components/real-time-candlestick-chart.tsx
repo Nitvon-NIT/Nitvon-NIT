@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ComposedChart, Bar, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine } from "recharts"
+import { ComposedChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine, Cell } from "recharts"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -17,12 +17,53 @@ interface CandlestickData {
   volume: number
   change: number
   changePercent: number
+  candleColor: string
+  wickTop: number
+  wickBottom: number
+  bodyTop: number
+  bodyBottom: number
 }
 
 interface RealTimeCandlestickChartProps {
   symbol: string
   interval?: "1m" | "5m" | "15m" | "1h" | "4h" | "1d"
   height?: number
+}
+
+const CustomCandlestick = (props: any) => {
+  const { payload, x, y, width, height } = props
+  if (!payload) return null
+
+  const { open, high, low, close } = payload
+  const isGreen = close >= open
+  const color = isGreen ? "#00ff88" : "#ff4757"
+
+  const bodyHeight = Math.abs(close - open) * (height / (payload.high - payload.low))
+  const bodyY = y + Math.max(high - Math.max(open, close)) * (height / (payload.high - payload.low))
+
+  const wickX = x + width / 2
+  const highY = y
+  const lowY = y + height
+  const openY = y + (high - open) * (height / (payload.high - payload.low))
+  const closeY = y + (high - close) * (height / (payload.high - payload.low))
+
+  return (
+    <g>
+      {/* Wick lines */}
+      <line x1={wickX} y1={highY} x2={wickX} y2={Math.min(openY, closeY)} stroke={color} strokeWidth={1} />
+      <line x1={wickX} y1={Math.max(openY, closeY)} x2={wickX} y2={lowY} stroke={color} strokeWidth={1} />
+      {/* Candlestick body */}
+      <rect
+        x={x + 1}
+        y={bodyY}
+        width={width - 2}
+        height={Math.max(bodyHeight, 1)}
+        fill={color}
+        stroke={color}
+        strokeWidth={1}
+      />
+    </g>
+  )
 }
 
 export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400 }: RealTimeCandlestickChartProps) {
@@ -118,29 +159,27 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
     const candlesticks: CandlestickData[] = []
     let price = currentPrice || basePrice
 
-    // Generate 24 hours of data
-    for (let i = 23; i >= 0; i--) {
-      const timestamp = Date.now() - i * 60 * 60 * 1000
+    // Generate 50 data points for better chart visualization
+    for (let i = 49; i >= 0; i--) {
+      const timestamp = Date.now() - i * 5 * 60 * 1000 // 5-minute intervals
 
-      // Realistic price movement with trends
-      const trendFactor = Math.sin(i * 0.3) * 0.02 // Subtle trend
-      const volatility = (Math.random() - 0.5) * 0.03 // ±1.5% volatility
+      const trendFactor = Math.sin(i * 0.3) * 0.02
+      const volatility = (Math.random() - 0.5) * 0.03
       const movement = trendFactor + volatility
 
       const open = price
       const change = open * movement
       const close = open + change
 
-      // Realistic high/low with wicks
       const wickRange = Math.abs(change) * (1 + Math.random())
       const high = Math.max(open, close) + wickRange * Math.random()
       const low = Math.min(open, close) - wickRange * Math.random()
 
-      // Realistic volume correlation with price movement
       const baseVolume = getBaseVolumeForSymbol(cryptoSymbol)
-      const volumeMultiplier = 1 + Math.abs(movement) * 10 // Higher volume on big moves
+      const volumeMultiplier = 1 + Math.abs(movement) * 10
       const volume = baseVolume * volumeMultiplier * (0.5 + Math.random())
 
+      const isGreen = close >= open
       candlesticks.push({
         timestamp,
         time: new Date(timestamp).toLocaleTimeString("en-US", {
@@ -154,6 +193,11 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
         volume,
         change,
         changePercent: (change / open) * 100,
+        candleColor: isGreen ? "#00ff88" : "#ff4757",
+        wickTop: high,
+        wickBottom: low,
+        bodyTop: Math.max(open, close),
+        bodyBottom: Math.min(open, close),
       })
 
       price = close
@@ -242,36 +286,46 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
 
   return (
     <Card
-      className={`p-3 md:p-6 bg-card/95 backdrop-blur-sm border border-border/50 ${isFullscreen ? "fixed inset-4 z-50 md:inset-8" : ""}`}
+      className={`p-3 md:p-6 bg-gray-900 backdrop-blur-sm border border-gray-800 ${isFullscreen ? "fixed inset-4 z-50 md:inset-8" : ""}`}
+      style={{ backgroundColor: "#0a0a0a" }} // Dark background to match reference
     >
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 md:mb-6">
         <div className="space-y-2 flex-1 min-w-0">
           <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-            <h3 className="text-lg md:text-2xl font-bold text-foreground truncate">{symbol}/USD</h3>
-            <Badge variant={isPositive ? "default" : "destructive"} className="flex items-center gap-1 text-xs">
+            <h3 className="text-lg md:text-2xl font-bold text-white truncate">{symbol}/USD</h3>
+            <Badge
+              variant={isPositive ? "default" : "destructive"}
+              className={`flex items-center gap-1 text-xs ${isPositive ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}`}
+            >
               {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {isPositive ? "+" : ""}
               {priceChangePercent.toFixed(2)}%
             </Badge>
             <Badge
               variant="outline"
-              className={`text-xs ${dataSource === "api" ? "text-green-500" : "text-yellow-500"}`}
+              className={`text-xs ${dataSource === "api" ? "text-green-400 border-green-500/30" : "text-yellow-400 border-yellow-500/30"}`}
             >
               <Activity className="h-3 w-3 mr-1" />
               {dataSource === "api" ? "Live" : "Demo"}
             </Badge>
           </div>
           <div className="flex items-baseline gap-2 md:gap-4 flex-wrap">
-            <span className="text-xl md:text-3xl font-bold text-foreground">${formatPrice(currentPrice)}</span>
-            <span className={`text-sm md:text-lg ${isPositive ? "text-chart-5" : "text-destructive"}`}>
-              {isPositive ? "+" : ""}${Math.abs(priceChange).toFixed(2)}
+            <span className={`text-xl md:text-3xl font-bold ${isPositive ? "text-green-400" : "text-red-400"}`}>
+              {formatPrice(currentPrice)} {isPositive ? "+" : ""}
+              {Math.abs(priceChange).toFixed(2)} ({isPositive ? "+" : ""}
+              {priceChangePercent.toFixed(2)}%)
             </span>
           </div>
-          <div className="text-xs md:text-sm text-muted-foreground">24h Volume: ${volume24h}</div>
+          <div className="text-xs md:text-sm text-gray-400">24h Volume: ${volume24h}</div>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Button variant="ghost" size="sm" onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 md:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="p-2 md:hidden text-gray-400 hover:text-white"
+          >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
           <div className="flex gap-1 overflow-x-auto">
@@ -281,7 +335,11 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
                 variant={selectedInterval === int ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setSelectedInterval(int as any)}
-                className="text-xs px-2 py-1 flex-shrink-0"
+                className={`text-xs px-2 py-1 flex-shrink-0 ${
+                  selectedInterval === int
+                    ? "bg-gray-700 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800"
+                }`}
               >
                 {int}
               </Button>
@@ -293,6 +351,7 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
       <div
         style={{
           height: isFullscreen ? "calc(100vh - 200px)" : window.innerWidth < 768 ? Math.min(height, 300) : height,
+          backgroundColor: "#0a0a0a",
         }}
       >
         <ResponsiveContainer width="100%" height="100%">
@@ -300,57 +359,38 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
             data={chartData}
             margin={{
               top: 20,
-              right: window.innerWidth < 768 ? 10 : 30,
+              right: window.innerWidth < 768 ? 40 : 60,
               left: window.innerWidth < 768 ? 10 : 20,
-              bottom: 5,
+              bottom: 60, // More space for volume chart
             }}
           >
             <XAxis
               dataKey="time"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: window.innerWidth < 768 ? 10 : 12, fill: "hsl(var(--muted-foreground))" }}
-              interval={window.innerWidth < 768 ? 2 : 0}
+              tick={{ fontSize: window.innerWidth < 768 ? 10 : 12, fill: "#666" }}
+              interval={window.innerWidth < 768 ? 4 : 2}
             />
             <YAxis
               domain={["dataMin - 50", "dataMax + 50"]}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: window.innerWidth < 768 ? 10 : 12, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(value) =>
-                window.innerWidth < 768 ? `$${(value / 1000).toFixed(0)}K` : `$${formatPrice(value)}`
-              }
+              tick={{ fontSize: window.innerWidth < 768 ? 10 : 12, fill: "#666" }}
+              tickFormatter={(value) => formatPrice(value)}
               width={window.innerWidth < 768 ? 50 : 80}
+              orientation="right" // Price axis on right like reference
             />
+            <YAxis yAxisId="volume" domain={[0, "dataMax"]} axisLine={false} tickLine={false} tick={false} width={0} />
+
             <Tooltip
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload as CandlestickData
                   return (
-                    <div className="bg-card border border-border rounded-lg p-2 md:p-3 shadow-lg max-w-xs">
-                      <p className="text-xs md:text-sm font-medium text-foreground mb-2">{label}</p>
-                      <div className="space-y-1 text-xs">
-                        <div className="flex justify-between gap-2 md:gap-4">
-                          <span className="text-muted-foreground">Open:</span>
-                          <span className="text-foreground font-medium">${formatPrice(data.open)}</span>
-                        </div>
-                        <div className="flex justify-between gap-2 md:gap-4">
-                          <span className="text-muted-foreground">High:</span>
-                          <span className="text-chart-5 font-medium">${formatPrice(data.high)}</span>
-                        </div>
-                        <div className="flex justify-between gap-2 md:gap-4">
-                          <span className="text-muted-foreground">Low:</span>
-                          <span className="text-destructive font-medium">${formatPrice(data.low)}</span>
-                        </div>
-                        <div className="flex justify-between gap-2 md:gap-4">
-                          <span className="text-muted-foreground">Close:</span>
-                          <span className="text-foreground font-medium">${formatPrice(data.close)}</span>
-                        </div>
-                        <div className="flex justify-between gap-2 md:gap-4">
-                          <span className="text-muted-foreground">Volume:</span>
-                          <span className="text-foreground font-medium">{formatVolume(data.volume)}</span>
-                        </div>
-                      </div>
+                    <div className="bg-red-500 text-white rounded px-2 py-1 text-sm font-medium">
+                      {formatPrice(data.close)}
+                      <br />
+                      {label}
                     </div>
                   )
                 }
@@ -358,57 +398,25 @@ export function RealTimeCandlestickChart({ symbol, interval = "5m", height = 400
               }}
             />
 
-            {/* Volume bars */}
-            <Bar dataKey="volume" fill="hsl(var(--muted))" opacity={0.3} yAxisId="volume" />
+            <Bar dataKey="volume" yAxisId="volume" fill="#333">
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? "#00ff88" : "#ff4757"} />
+              ))}
+            </Bar>
 
-            {/* Price line overlay */}
-            <Line
-              type="monotone"
-              dataKey="close"
-              stroke={isPositive ? "hsl(var(--chart-5))" : "hsl(var(--destructive))"}
-              strokeWidth={window.innerWidth < 768 ? 1.5 : 2}
-              dot={false}
-              activeDot={{
-                r: window.innerWidth < 768 ? 3 : 4,
-                fill: isPositive ? "hsl(var(--chart-5))" : "hsl(var(--destructive))",
-              }}
-            />
+            <Bar dataKey="high" fill="transparent">
+              {chartData.map((entry, index) => (
+                <Cell key={`candle-${index}`}>
+                  <CustomCandlestick payload={entry} />
+                </Cell>
+              ))}
+            </Bar>
 
-            {/* Current price reference line */}
             {latestCandle && (
-              <ReferenceLine
-                y={latestCandle.close}
-                stroke={isPositive ? "hsl(var(--chart-5))" : "hsl(var(--destructive))"}
-                strokeDasharray="3 3"
-                strokeWidth={1}
-              />
+              <ReferenceLine y={latestCandle.close} stroke="#666" strokeDasharray="2 2" strokeWidth={1} />
             )}
           </ComposedChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 md:gap-4 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border/50">
-        <div className="text-center">
-          <div className="text-xs text-muted-foreground">RSI (14)</div>
-          <div className="text-xs md:text-sm font-medium text-foreground">{(Math.random() * 40 + 30).toFixed(1)}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-xs text-muted-foreground">MA (20)</div>
-          <div className="text-xs md:text-sm font-medium text-foreground">
-            $
-            {window.innerWidth < 768
-              ? ((currentPrice * (0.98 + Math.random() * 0.04)) / 1000).toFixed(1) + "K"
-              : formatPrice(currentPrice * (0.98 + Math.random() * 0.04))}
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="text-xs text-muted-foreground">MACD</div>
-          <div
-            className={`text-xs md:text-sm font-medium ${Math.random() > 0.5 ? "text-chart-5" : "text-destructive"}`}
-          >
-            {(Math.random() * 200 - 100).toFixed(2)}
-          </div>
-        </div>
       </div>
     </Card>
   )
