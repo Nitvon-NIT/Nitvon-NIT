@@ -1,0 +1,196 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Cyberpunk-inspired color palette */
+  --background: oklch(0.08 0.02 240); /* Deep dark blue-black */
+  --foreground: oklch(0.95 0.05 60); /* Bright golden white */
+  --card: oklch(0.12 0.03 240); /* Slightly lighter dark */
+  --card-foreground: oklch(0.9 0.05 60);
+  --popover: oklch(0.1 0.02 240);
+  --popover-foreground: oklch(0.95 0.05 60);
+  --primary: oklch(0.75 0.15 85); /* Bright golden yellow */
+  --primary-foreground: oklch(0.08 0.02 240);
+  --secondary: oklch(0.18 0.05 240); /* Dark blue-gray */
+  --secondary-foreground: oklch(0.9 0.05 60);
+  --muted: oklch(0.15 0.03 240);
+  --muted-foreground: oklch(0.65 0.05 60);
+  --accent: oklch(0.6 0.25 180); /* Neon cyan */
+  --accent-foreground: oklch(0.08 0.02 240);
+  --destructive: oklch(0.65 0.25 15); /* Neon red */
+  --destructive-foreground: oklch(0.95 0.05 60);
+  --border: oklch(0.2 0.05 240);
+  --input: oklch(0.15 0.03 240);
+  --ring: oklch(0.75 0.15 85);
+  --chart-1: oklch(0.75 0.15 85); /* Golden */
+  --chart-2: oklch(0.6 0.25 180); /* Cyan */
+  --chart-3: oklch(0.65 0.25 300); /* Purple */
+  --chart-4: oklch(0.65 0.25 15); /* Red */
+  --chart-5: oklch(0.7 0.2 120); /* Green */
+  --radius: 0.75rem;
+  --sidebar: oklch(0.1 0.02 240);
+  --sidebar-foreground: oklch(0.9 0.05 60);
+  --sidebar-primary: oklch(0.75 0.15 85);
+  --sidebar-primary-foreground: oklch(0.08 0.02 240);
+  --sidebar-accent: oklch(0.18 0.05 240);
+  --sidebar-accent-foreground: oklch(0.9 0.05 60);
+  --sidebar-border: oklch(0.2 0.05 240);
+  --sidebar-ring: oklch(0.75 0.15 85);
+
+  /* Custom game colors */
+  --neon-cyan: oklch(0.6 0.25 180);
+  --neon-purple: oklch(0.65 0.25 300);
+  --neon-green: oklch(0.7 0.2 120);
+  --neon-red: oklch(0.65 0.25 15);
+  --crypto-gold: oklch(0.75 0.15 85);
+}
+
+.dark {
+  /* Dark mode uses same colors for consistency */
+  --background: oklch(0.08 0.02 240);
+  --foreground: oklch(0.95 0.05 60);
+  --card: oklch(0.12 0.03 240);
+  --card-foreground: oklch(0.9 0.05 60);
+  --popover: oklch(0.1 0.02 240);
+  --popover-foreground: oklch(0.95 0.05 60);
+  --primary: oklch(0.75 0.15 85);
+  --primary-foreground: oklch(0.08 0.02 240);
+  --secondary: oklch(0.18 0.05 240);
+  --secondary-foreground: oklch(0.9 0.05 60);
+  --muted: oklch(0.15 0.03 240);
+  --muted-foreground: oklch(0.65 0.05 60);
+  --accent: oklch(0.6 0.25 180);
+  --accent-foreground: oklch(0.08 0.02 240);
+  --destructive: oklch(0.65 0.25 15);
+  --destructive-foreground: oklch(0.95 0.05 60);
+  --border: oklch(0.2 0.05 240);
+  --input: oklch(0.15 0.03 240);
+  --ring: oklch(0.75 0.15 85);
+  --chart-1: oklch(0.75 0.15 85);
+  --chart-2: oklch(0.6 0.25 180);
+  --chart-3: oklch(0.65 0.25 300);
+  --chart-4: oklch(0.65 0.25 15);
+  --chart-5: oklch(0.7 0.2 120);
+  --sidebar: oklch(0.1 0.02 240);
+  --sidebar-foreground: oklch(0.9 0.05 60);
+  --sidebar-primary: oklch(0.75 0.15 85);
+  --sidebar-primary-foreground: oklch(0.08 0.02 240);
+  --sidebar-accent: oklch(0.18 0.05 240);
+  --sidebar-accent-foreground: oklch(0.9 0.05 60);
+  --sidebar-border: oklch(0.2 0.05 240);
+  --sidebar-ring: oklch(0.75 0.15 85);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Custom game color utilities */
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-green: var(--neon-green);
+  --color-neon-red: var(--neon-red);
+  --color-crypto-gold: var(--crypto-gold);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Custom cyberpunk animations */
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Neon text effect */
+.neon-text {
+  text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+}
+
+/* Cyberpunk grid background */
+.cyber-grid {
+  background-image: linear-gradient(rgba(96, 165, 250, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 165, 250, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
