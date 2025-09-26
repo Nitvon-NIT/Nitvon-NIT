@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css"
 import { Suspense } from "react"
+import { BackgroundMusicPlayer } from "@/components/background-music-player"
 
 export const metadata: Metadata = {
   title: "Nitvon - The Crypto Quest",
@@ -24,6 +25,7 @@ export default function RootLayout({
         <div className="min-h-screen bg-background cyber-grid">
           <Suspense>{children}</Suspense>
         </div>
+        <BackgroundMusicPlayer />
         <Analytics />
         <SpeedInsights />
       </body>
