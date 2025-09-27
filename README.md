@@ -1,3 +1,4 @@
+![IMG_1043](https://github.com/user-attachments/assets/3581478a-3a86-4f34-a7f3-5f6a010cbd41)
 ## Hi there 👋
 
 <!--
